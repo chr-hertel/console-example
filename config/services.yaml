@@ -1,0 +1,27 @@
+parameters:
+    app.export_storage: '%kernel.project_dir%/var/export'
+    app.invoice_storage: '%kernel.project_dir%/var/invoices'
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        bind:
+            $environment: '%kernel.environment%'
+            $projectDir: '%kernel.project_dir%'
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+            - '../src/Tests/'
+
+    App\Invoice\Exporter:
+        $storage: '%app.export_storage%'
+
+    App\Invoice\Mailer:
+        $storage: '%app.invoice_storage%'
+
+    Nelmio\Alice\FileLoaderInterface: '@nelmio_alice.file_loader'

@@ -1,0 +1,14 @@
+parameters:
+    app.export_storage: '%kernel.project_dir%/var/test-export'
+    app.invoice_storage: '%kernel.project_dir%/var/test-invoices'
+
+services:
+    _defaults:
+        public: true
+
+    test.App\Invoice\Exporter: '@App\Invoice\Exporter'
+    test.App\Invoice\Mailer: '@App\Invoice\Mailer'
+    test.App\Payment\Provider: '@App\Payment\Provider'
+    test.mailer.logger_message_listener: '@mailer.logger_message_listener'
+    test.Nelmio\Alice\FileLoaderInterface: '@Nelmio\Alice\FileLoaderInterface'
+    test.Doctrine\ORM\EntityManagerInterface: '@Doctrine\ORM\EntityManagerInterface'
