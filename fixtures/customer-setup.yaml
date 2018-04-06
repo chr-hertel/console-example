@@ -1,0 +1,29 @@
+App\Entity\Magazine:
+    phpmag:
+        __construct:
+            - 'PHP Magazin'
+            - 980
+    phparch:
+        __construct:
+            - 'PHP Architect'
+            - 600
+
+App\Entity\Address:
+    address{1..500}:
+        __construct:
+            - '<streetName()>'
+            - '<buildingNumber()>'
+            - '<city()>'
+            - '<postcode()>'
+
+App\Entity\Customer:
+    customer{1..25}:
+        __construct:
+            - '<firstName()>'
+            - '<lastName()>'
+            - '<safeEmail()>'
+            - '@address<current()>'
+            - '@address<current()>'
+            - '50%? @phpmag : @phparch'
+        __calls:
+            - disable (20%?): []
