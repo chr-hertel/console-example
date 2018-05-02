@@ -4,12 +4,10 @@ declare(strict_types = 1);
 
 namespace App\Tests\Command;
 
+use App\BillingRun;
 use App\Command\BillingRunCommand;
 use App\Entity\Customer;
 use App\Entity\Invoice;
-use App\Invoice\Exporter;
-use App\Invoice\Mailer;
-use App\Payment\Provider;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Nelmio\Alice\FileLoaderInterface;
@@ -51,14 +49,8 @@ class BillingRunCommandTest extends KernelTestCase
         $fileLoader = $kernel->getContainer()->get('test.'.FileLoaderInterface::class);
         $this->entityManager = $kernel->getContainer()->get('test.'.EntityManagerInterface::class);
 
-        $application->add(new BillingRunCommand(
-            $this->entityManager->getRepository(Customer::class),
-            $this->entityManager,
-            $kernel->getContainer()->get('test.'.Provider::class),
-            $kernel->getContainer()->get('test.'.Mailer::class),
-            $kernel->getContainer()->get('test.'.Exporter::class),
-            $kernel->getContainer()->getParameter('kernel.environment')
-        ));
+        $billingRun = $kernel->getContainer()->get('test.'.BillingRun::class);
+        $application->add(new BillingRunCommand($billingRun));
 
         $schemaTool = new SchemaTool($this->entityManager);
         $schemaTool->createSchema($this->entityManager->getMetadataFactory()->getAllMetadata());
