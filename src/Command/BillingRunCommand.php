@@ -61,7 +61,7 @@ class BillingRunCommand extends Command
 
     protected function configure(): void
     {
-        $this->addArgument('period', InputArgument::OPTIONAL, 'Billing Period', '');
+        $this->addArgument('period', InputArgument::REQUIRED, 'Billing Period');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
@@ -71,23 +71,7 @@ class BillingRunCommand extends Command
             $stopwatch->start('billing-run');
         }
 
-        $period = \DateTimeImmutable::createFromFormat('m-Y', $input->getArgument('period'));
-
-        if (false === $period) {
-            $questionHelper = $this->getHelper('question');
-            $question = new Question('Which period do you want? (format: mm-yyyy)');
-            $question->setNormalizer(function ($period) {
-                return \DateTimeImmutable::createFromFormat('m-Y', (string) $period);
-            });
-            $question->setValidator(function ($period) {
-                if (false === $period) {
-                    throw new \InvalidArgumentException('The given value was not a valid period, use mm-yyyy as format');
-                }
-
-                return $period;
-            });
-            $period = $questionHelper->ask($input, $output, $question);
-        }
+        $period = $input->getArgument('period');
 
         $output->writeln(sprintf('<info>Start billing run for %s</info>', $period->format('m-Y')));
         $output->writeln('============================='.PHP_EOL);
@@ -107,6 +91,29 @@ class BillingRunCommand extends Command
         }
 
         return 0;
+    }
+
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        $period = \DateTimeImmutable::createFromFormat('m-Y', (string) $input->getArgument('period'));
+
+        if (false === $period) {
+            $questionHelper = $this->getHelper('question');
+            $question = new Question('Which period do you want? (format: mm-yyyy)');
+            $question->setNormalizer(function ($period) {
+                return \DateTimeImmutable::createFromFormat('m-Y', (string) $period);
+            });
+            $question->setValidator(function ($period) {
+                if (false === $period) {
+                    throw new \InvalidArgumentException('The given value was not a valid period, use mm-yyyy as format');
+                }
+
+                return $period;
+            });
+            $period = $questionHelper->ask($input, $output, $question);
+        }
+
+        $input->setArgument('period', $period);
     }
 
     /**
