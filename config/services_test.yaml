@@ -12,3 +12,4 @@ services:
     test.mailer.logger_message_listener: '@mailer.logger_message_listener'
     test.Nelmio\Alice\FileLoaderInterface: '@Nelmio\Alice\FileLoaderInterface'
     test.Doctrine\ORM\EntityManagerInterface: '@Doctrine\ORM\EntityManagerInterface'
+    test.App\BillingRun: '@App\BillingRun'
