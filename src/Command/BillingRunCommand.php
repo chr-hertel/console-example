@@ -44,7 +44,7 @@ class BillingRunCommand extends Command
         $output->writeln(sprintf('<info>Start billing run for %s</info>', $period->format('m-Y')));
         $output->writeln('============================='.PHP_EOL);
 
-        $this->billingRun->start($period, $output);
+        $this->billingRun->start($period);
 
         $output->writeln(['', '<info>Done.</info>', '']);
 
