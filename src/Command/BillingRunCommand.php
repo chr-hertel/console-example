@@ -10,8 +10,10 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * Monthly Billing run for all active subscribers of our magazines.
@@ -41,23 +43,25 @@ class BillingRunCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
         $period = $input->getArgument('period');
 
-        $output->writeln(sprintf('<info>Start billing run for %s</info>', $period->format('m-Y')));
-        $output->writeln('============================='.PHP_EOL);
+        $io->title(sprintf('Start billing run for %s', $period->format('m-Y')));
 
-        $progress = new ProgressBar($output);
-        $onProgress = function (int $count, int $max) use ($output, $progress) {
-            $this->onProgress($output, $progress, $count, $max);
+        $progressIO = $this->style($input, $output);
+        $progress = $progressIO->createProgressBar();
+        $onProgress = function (int $current, int $max) use ($progressIO, $progress) {
+            $this->onProgress($progressIO, $progress, $current, $max);
         };
 
-        $onError = function (PaymentException $exception) use ($output) {
-            $output->writeln('<error>'.$exception->getMessage().'</error>');
+        $errorIO = $this->style($input, $output);
+        $onError = function (PaymentException $exception) use ($errorIO) {
+            $errorIO->error($exception->getMessage());
         };
 
         $this->billingRun->start($period, $onProgress, $onError);
 
-        $output->writeln(['', '<info>Done.</info>', '']);
+        $io->success('Done.');
 
         return 0;
     }
@@ -85,10 +89,10 @@ class BillingRunCommand extends Command
         $input->setArgument('period', $period);
     }
 
-    private function onProgress(OutputInterface $output, ProgressBar $progress, int $current, int $max): void
+    private function onProgress(SymfonyStyle $io, ProgressBar $progress, int $current, int $max): void
     {
         if ($current === 1) {
-            $output->writeln(sprintf('<info>Loaded %d customers to process</info>', $max));
+            $io->note(sprintf('Loaded %d customers to process', $max));
             $progress->setMaxSteps($max);
         }
 
@@ -96,7 +100,17 @@ class BillingRunCommand extends Command
 
         if ($current === $max) {
             $progress->finish();
-            $output->writeln(sprintf('<info>Processed %d customers</info>', $max));
+            $io->note(sprintf('Processed %d customers', $max));
         }
+    }
+
+    /**
+     * Needed for testing context due to OutputInterface implementation
+     */
+    private function style(InputInterface $input, OutputInterface $output): SymfonyStyle
+    {
+        $out = $output instanceof ConsoleOutput ? $output->section() : $output;
+
+        return new SymfonyStyle($input, $out);
     }
 }
