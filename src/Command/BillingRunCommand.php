@@ -66,11 +66,6 @@ class BillingRunCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        if ('dev' === $this->environment) {
-            $stopwatch = new Stopwatch();
-            $stopwatch->start('billing-run');
-        }
-
         $period = $input->getArgument('period');
 
         $output->writeln(sprintf('<info>Start billing run for %s</info>', $period->format('m-Y')));
@@ -85,10 +80,6 @@ class BillingRunCommand extends Command
         $this->exportMagazines($output, $period, $invoices);
 
         $output->writeln(['', '<info>Done.</info>', '']);
-
-        if ('dev' === $this->environment) {
-            $output->writeln((string) $stopwatch->stop('billing-run'));
-        }
 
         return 0;
     }
